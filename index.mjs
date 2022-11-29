@@ -1,38 +1,46 @@
 import { cert, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import serviceAccount from './serviceAccountKey.json' assert { type: 'json' };
 
 const app = initializeApp({
-  credential: cert('./credentials.json'),
+  credential: cert(serviceAccount),
 });
-const db = getFirestore(app);
-const collection = db.collection('users');
 
-const setItem = async (key, value) => {
-  await collection.doc(key).set(value);
-};
+class Storage {
+  constructor(collection) {
+    const db = getFirestore(app);
+    this.collection = db.collection(collection);
+  }
 
-const fetchItems = async () => {
-  const items = {};
-  const snapshot = await collection.get();
-  snapshot.forEach((item) => {
-    items[item.id] = item.data();
-  });
-  return items;
-};
+  async getCount() {
+    return (await this.collection.count().get()).data().count;
+  }
 
-const removeItem = async (key) => {
-  await collection.doc(key).delete();
-};
+  async setItem(key, value) {
+    await this.collection.doc(key).set(value);
+  }
+
+  async fetchItems() {
+    const items = {};
+    const snapshot = await this.collection.get();
+    snapshot.forEach((item) => {
+      items[item.id] = item.data();
+    });
+    return items;
+  }
+
+  async removeItem(key) {
+    await this.collection.doc(key).delete();
+  }
+}
+
+export default Storage;
+
+const storage = new Storage('links');
 
 (async () => {
-  await setItem('memochou1993', {
-    name: 'Memo Chou',
-    age: 18,
-  });
-
-  console.table(await fetchItems());
-  
-  await removeItem('memochou1993');
-
-  console.table(await fetchItems());
+  console.log(await storage.getCount());
+  await storage.setItem('0', { foo: 'bar' });
+  console.log(await storage.fetchItems());
+  await storage.removeItem('0');
 })();
