@@ -20,7 +20,7 @@ class Storage {
     await this.collection.doc(key).set(value);
   }
 
-  async fetchItems() {
+  async getItems() {
     const items = {};
     const snapshot = await this.collection.get();
     snapshot.forEach((item) => {
@@ -33,8 +33,6 @@ class Storage {
     await this.collection.doc(key).delete();
   }
 }
-
-export default Storage;
 
 const storage = new Storage('links');
 
