@@ -20,6 +20,10 @@ class Storage {
     await this.collection.doc(key).set(value);
   }
 
+  async getItem(key) {
+    return (await this.collection.doc(key).get()).data();
+  }
+
   async getItems() {
     const items = {};
     const snapshot = await this.collection.get();
@@ -39,6 +43,6 @@ const storage = new Storage('links');
 (async () => {
   console.log(await storage.getCount());
   await storage.setItem('0', { foo: 'bar' });
-  console.log(await storage.fetchItems());
+  console.log(await storage.getItem('0'));
   await storage.removeItem('0');
 })();
